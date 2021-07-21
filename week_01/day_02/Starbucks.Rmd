@@ -1,0 +1,47 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+starbucks_drinkMenu_expanded
+```
+```{r}
+library(tidyverse)
+```
+```{r}
+select(starbucks_drinkMenu_expanded, Beverage_category, Beverage, Beverage_prep, Calories)
+```
+
+```{r}
+starbucks_menu <- select(starbucks_drinkMenu_expanded, Beverage_category, Beverage, Beverage_prep, Calories)
+```
+```{r}
+any(is.na(starbucks_menu))
+```
+
+
+```{r}
+starbucks_menu %>% 
+  mutate(calorie_diff = Calories - 135)
+```
+
+```{r}
+starbucks_menu %>% 
+  summarise(calories_mean = mean(Beverage_category, Calories))
+```
+
+```{r}
+starbucks_menu %>% 
+  group_by(Beverage_category) %>% 
+  summarise(calorie_mean = mean(Calories)) %>% 
+  arrange(desc(calorie_mean))
+
+```
+
+```{r}
+starbucks_menu %>% 
+  group_by(Beverage_prep) %>% 
+  summarise(calorie_mean2 = mean(Calories)) %>% 
+  arrange(desc(calorie_mean2))
+```
+
