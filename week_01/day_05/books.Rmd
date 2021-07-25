@@ -1,0 +1,53 @@
+---
+title: "books"
+output: html_notebook
+---
+```{r}
+library(tidyverse)
+```
+
+# Load Data
+
+```{r}
+books <- read_csv("data/books.csv")
+```
+```{r}
+str("books")
+```
+```{r}
+dim(books)
+```
+```{r}
+str(books)
+```
+```{r}
+library(dplyr)
+```
+
+```{r}
+dim(books)
+```
+
+```{r}
+print(summary(books))
+```
+```{r}
+is.na(books)
+```
+
+```{r}
+view(books)
+```
+
+```{r}
+filter(books, authors == "Bill Bryson")
+```
+
+```{r}
+filter(authors == "Bill Bryson")
+```
+
+filter(books, authors == "Bill Bryson")
+```{r}
+filter(books, authors == "Bill Bryson")
+```
