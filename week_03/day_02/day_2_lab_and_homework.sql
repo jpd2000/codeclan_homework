@@ -24,18 +24,17 @@ WHERE pension_enrol IS TRUE;
 
 
 
+
 /*(c). 	Find the first name, last name and team name of employees who are members of teams, 
 -- 		where their team has a charge cost greater than 80.*/
 
 SELECT 
-	employees.first_name,
-	employees.last_name,
-	teams.name AS team,
-	teams.charge_cost,
-	CAST (charge_cost AS INTEGER)
-FROM employees INNER JOIN teams
-ON employees.team_id = teams.id
-WHERE charge_cost > '80';
+	e.first_name,
+	e.last_name,
+	t.name AS team
+FROM employees AS e INNER JOIN teams AS t
+ON e.team_id = t.id
+WHERE CAST(t.charge_cost AS INT) > 80;
 /* Produces the required table kinda...but it's empty :( */
 
 
@@ -51,6 +50,13 @@ SELECT
 FROM employees INNER JOIN pay_details
 ON employees.team_id = pay_details.id
 ORDER BY last_name;
+
+SELECT 
+  e.*,
+  pd.local_account_no,
+  pd.local_sort_code
+FROM employees AS e LEFT JOIN pay_details AS pd
+ON e.pay_detail_id = pd.id
 
 
 /*(b). 	Amend your query above to also return the name of the team that each employee belongs to.*/
@@ -134,6 +140,14 @@ GROUP BY teams.charge_cost
 ORDER BY total_day_charge;
 
 /* Doesnt work */
+
+SELECT 
+  t.name,
+  COUNT(e.id) * CAST(t.charge_cost AS INT) AS total_day_charge
+FROM employees AS e
+INNER JOIN teams AS t
+ON e.team_id = t.id
+GROUP BY t.id
 
 
 /*(c).  How would you amend your query from above to show only those teams with a total_day_charge greater than 5000?*/
