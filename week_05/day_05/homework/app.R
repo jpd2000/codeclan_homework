@@ -37,14 +37,14 @@ ui <- fluidPage(
         
         # Show a plot of the critic scores
         mainPanel(
-           plotOutput("game_rating")
+           plotOutput("critic_score")
         )
     )
 )
 
 # Define server logic required to show data as columns
 server <- function(input, output) {
-    output$game_rating <- renderPlot({
+    output$critic_score <- renderPlot({
         
     game_sales %>%
         filter(platform == "input$platform_input") %>%

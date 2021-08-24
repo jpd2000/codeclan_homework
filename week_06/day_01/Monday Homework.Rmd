@@ -1,0 +1,113 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+# Titanic Question: Calculate the conditional probabilities prob
+# (survived∣crew)and prob(survived∣passenger) to settle this dispute.
+library(prob)
+library(gtools)
+library(tidyverse)
+
+titanic <- read_csv("data/titanic.csv") 
+```
+
+```{r}
+titanic_tidy <- titanic %>%
+   mutate(
+    crew = if_else(fare < 1, "TRUE", "FALSE"))
+         
+```
+
+```{r}
+prob_survived_crew <- titanic_tidy %>%
+  filter(crew == "TRUE", survived == "yes") %>%
+  summarise(prob = n() / nrow(titanic_tidy))
+prob_survived_crew
+```
+
+```{r}
+prob_survived_passenger <- titanic_tidy %>%
+  filter(crew == "FALSE", survived == "yes") %>%
+  summarise(prob = n() / nrow(titanic_tidy))
+prob_survived_passenger 
+```
+
+# Question 1.
+# If I roll a six-sided dice once, what is the probability of getting a number less than 5?
+```{r}
+s <- rolldie(1)
+size_s <- nrow(s)
+less_than_5 <- s %>% 
+  filter(X1 < 5)
+prob_less_than_5 <- nrow(less_than_5)/size_s
+prob_less_than_5
+```
+
+# Question 2.
+# How many outcomes are there in the sample space of an experiment in which we toss three dice?
+```{r}
+s <- rolldie(3)
+size_s <- nrow(s)
+size_s
+```
+# Question 3.
+# In an experiment where we roll four dice:
+# How many outcomes are in the event where the total of the four dice equals 5, 6 or 7)?
+# what is the probability of this event? # what assumptions do we apply in answering part ii?
+```{r}
+s <- rolldie(4)
+size_s <- nrow(s)
+equals_5_6_7 <- s %>% 
+  filter(X1 + X2 + X3 + X4 == c("5", "6", "7"))
+prob_equals_5_6_7<- nrow(equals_5_6_7)/size_s
+equals_5_6_7
+```
+
+
+
+# Question 4.
+# Five chairs are placed in a row in a room, along with five people of differing height. 
+# The people sit down randomly on the chairs. 
+# What is the probability that they sit in order of decreasing height, left to right?
+```{r}
+
+people <- c(1:5)
+
+
+chairs <- as_tibble(
+  permutations(
+    n = 5, 
+    r = 5, 
+    v = people, 
+    repeats.allowed = FALSE
+  )
+)
+chairs
+
+# 120 total possibilities so 2 instances in 120 they would sit in height order, left to right specifically means probability is 1 in 120
+```
+
+# Question 5.
+# I roll six dice:
+# what is the probability I see the numbers 6, 5, 4, 3, 2 and 1 in order on the dice, left to right?
+# what is the probability I see one each of the numbers 6, 5, 4, 3, 2 and 1 on the dice regardless of order?
+```{r}
+s <- rolldie(6)
+size_s <- nrow(s)
+size_s
+# probability is 1 in 46,656 for part 1
+size_s / 6
+# probability is 1 in 7776 for part 2
+```
+
+
+
+# Question 6.
+# If I draw a single card from a 52-card deck, and it is black, what is the probability that its suit is spades?
+<!-- 52 cards -->
+<!-- 26 are black so 1 in 2 it's black -->
+<!-- 13 are spades so probability is 1 in 4 / 0.25 -->
+
+
