@@ -1,0 +1,270 @@
+---
+title: "Hypothesis tests & probability - homework"
+output: HTML Document
+---
+
+```{r}
+library(tidyverse)
+library(infer)
+data(msleep)
+# Loading required libraries and target data
+```
+
+
+**Question 1.**  
+Explore the dataset and familiarise yourself with it.
+```{r}
+msleep %>% 
+  glimpse()
+
+#  Data seems in good shape, don't feel I need to clean it, variables are all in tidy format although there are a few NA values to be aware of.  Only 11 variables, most won't be required, maybe 1 or 2 new ones will be. Data types are correct, with <chr> & <dbl> used correctly.
+
+```
+
+
+**Question 2.**  
+Jabberwockies sleep for around 7 hours a night, on average. Perform an appropriate statistical test to determine whether the mean `sleep_total` in the sampled population of animal types differs from the typical value for jabberwockies.
+
+```{r}
+observed_stat <- msleep %>%
+  summarise(mean_sleep_total = mean(sleep_total))
+observed_stat
+# I will use a one-sample test as I am comparing the mean from one sample (animal types) against a specified value (7 Hours).  First thing I need is the observed stat, i.e. what am I comparing to the specified value of 7 hours.
+```
+
+```{r}
+msleep %>% 
+  ggplot(aes(x = sleep_total)) + 
+  geom_histogram(col = "white", bins = 20)
+# Although this step is not essential, it gives me a good indication of the spread of sleep totals.
+```
+
+```{r}
+# My Null Hypothesis is the average sleep total for all animals equals 7 hours, my alternate hypothesis is that it does not equal 7 hours. 
+# The null_distribution will show me what the distribution would be if H0 were true, the significance level I will use is α=0.05. 
+# H0: πno_sleep_total = 7, # Ha: πno_sleep_total ≠ 7
+
+null_distribution <- msleep %>%
+  specify(response = sleep_total) %>% 
+  hypothesize(null = "point", mu = 7) %>%
+  generate(reps = 5000, type = "bootstrap") %>%
+  calculate(stat = "mean") 
+
+head(null_distribution)
+```
+
+```{r}
+null_distribution %>%
+  visualise(bins = 30) +
+  shade_p_value(obs_stat = observed_stat, direction = "both")
+# When I map the null_distribution, and odd the observed stat from all animals, it clearly shows the average sleep total is well above 7.
+```
+
+```{r}
+p_value <- null_distribution %>%
+  get_p_value(obs_stat = observed_stat$mean_sleep_total, direction = "both")
+p_value
+
+# As this figure is well below the significance level of 0.5, we can be confident in rejecting the null hypothesis 
+```
+
+
+**Question 3.**  
+Perform an appropriate statistical test to determine whether omnivores sleep for significantly longer than herbivores, on average.
+
+```{r} 
+# The first thing I want to do is get a subset of data containing only omnivores, herbivores, and how long they sleep for.  This should help with later analysis. Although name isn't strictly required it helps me spot errors and can add insight.
+sleep_data_vore <- msleep %>%
+  select(
+    name,
+    vore,
+    sleep_total
+  ) %>% 
+  filter(!vore == "carni", !vore == "insecti") %>%
+    group_by(vore) %>%
+    arrange(sleep_total)
+  
+sleep_data_vore
+```
+
+```{r}
+# To answer this question, I think it needs to be on a "two means" independent basis.  The two groups and how they sleep are not dependent on each other, we are merely looking at whether one mean is significantly higher than the other i.e.
+# H0: μpmean_sleep_total(omni) − μpmean_sleep_total(herbi) = 0
+# Ha: μpmean_sleep_total(omni) − μpmean_sleep_total(herbi > 0
+
+vore_sleep_mean <- sleep_data_vore %>%
+  group_by(vore) %>% 
+  summarise(mean_sleep_total = mean(sleep_total), animal_count = n())
+vore_sleep_mean
+
+# Here I am looking for the average sleep total for omnivores & herbivores, and how many are in each group.  It shows the average sleep time for omnivores is higher than herbivores, but it is impossible to say if it is significantly higher at this point.
+```
+
+```{r}
+sleep_data_vore %>%
+  ggplot(aes(y = sleep_total, x = vore)) +
+  geom_boxplot() 
+
+# This visualisation shows that omnivores do not generally sleep for longer than herbivores, there does appear to be some outliers in both groups though, far from the median.  It may be helpful to run a hypothesis test to double check the findings so far.
+```
+
+```{r}
+# If H0 is true, whether the animal is an omnivore or herbivore would have no bearing on sleep duration. 
+null_distribution <-sleep_data_vore %>% 
+  specify(sleep_total ~ vore) %>% # Testing the relationship between avg sleep time & whether the animal is an omnivore or herbivore.
+  hypothesize(null = "independence") %>% # The null hypothesis is there is no difference between the two animal types
+  generate(reps = 1000, type = "permute") %>% 
+  calculate(stat = "diff in means", order = c("omni", "herbi")) 
+
+head(null_distribution)
+```
+```{r}
+# As I now have the null distribution, I want to calculate the observed statistic, avg_omni- avg_herbi, and then visualise the null distribution and where the observed statistic lies on that distribution.
+
+observed_stat <- sleep_data_vore %>% 
+  specify(sleep_total ~ vore) %>%
+  calculate(stat = "diff in means", order = c("omni", "herbi")) 
+  
+observed_stat
+```
+
+```{r}
+# As the Ha we see that this is a one-tailed test because the alternative hypothesis is the difference is greater than zero i.e. right direction
+null_distribution %>%
+  visualise() +
+  shade_p_value(obs_stat = observed_stat, direction = "right")
+
+# Although this visualisation shows that average sleep times of omnivores is greater than herbivores, it is not as extreme as it could be.  
+```
+```{r}
+p_value <- null_distribution %>%
+  get_p_value(obs_stat = observed_stat, direction = "right")
+
+p_value
+# With the p_value being smaller than our critical value of 0.05, H0 can be rejected and conclude that we have found enough evidence in our data to suggest that the average sleep time for omnivores is greater than herbivores.  I would not say it was significantly greater though given the evidence.
+```
+
+**Question 4. **
+Perform an appropriate statistical test to determine whether the proportion of domesticated animal types in the population of animal types is greater than $5\%$.
+
+```{r}
+# This type of problems requires a one-sample hypothesis test using proportion as a measure
+domesticated_prop<- msleep %>% 
+mutate(domesticated_flag = ifelse(conservation == "domesticated", "is_domesticated", "not_domesticated"))
+# New variable added, showing if animal is domesticated or not.  This binary flag is required to calculate the proportion, it is or it isn't.
+```
+
+```{r}
+domesticated_prop %>%
+  group_by(domesticated_flag) %>%
+  summarise(prop = n()/nrow(domesticated_prop)) %>%
+  filter(domesticated_flag == "is_domesticated")
+
+# This takes the newly amended dataset, groups by the new variable of domesticated_flag, and calculates the % of the entire group flagged as domesticated
+```
+```{r}
+# Significance level α=0.05, hypotheses H0: πno_is_domesticated > 0.05, Ha: πno_is_domesticated <= 0.05
+#  Null distribution set up with success being a "is_domesticated" flag, distribution setup by simulation.
+
+null_distribution <- domesticated_prop %>%
+  specify(response = domesticated_flag, success = "is_domesticated") %>% 
+  hypothesize(null = "point", p = 0.05) %>%
+  generate(reps = 5000, type = "simulate") %>%
+  calculate(stat = "prop") 
+
+head(null_distribution)
+```
+
+```{r}
+# Now to visualise the distribution of the simulations, take the actual observed proportion, then overlay this onto the simulation.
+null_distribution %>%
+  visualise(bins = 30)
+```
+```{r}
+observed_stat <- domesticated_prop %>% 
+  specify(response = domesticated_flag, success = "is_domesticated") %>% 
+  calculate(stat = "prop") 
+
+observed_stat
+```
+```{r}
+null_distribution %>%
+  visualise(bins = 30) + 
+  shade_p_value(obs_stat = observed_stat, direction = "left")
+# it is a one-sided test as the alternative hypothesis is whether the proportion is less than or different in a left direction
+```
+```{r}
+p_value <- null_distribution %>%
+  get_p_value(obs_stat = observed_stat, direction = "left")
+p_value
+
+# Here the p-value is more than our significance level of 0.05, i.e. the cut-off beyond which we fail to reject H0. Based on the data, the proportion of animals who are domesticated is significantly higher than 5 %.
+
+```
+<!-- ## Hypothesis testing - Defining the Hypothesis  -->
+<!-- For the following three business problems write out: -->
+<!-- * What kind of test you would use   -->
+<!-- *  $H_0$ and $H_a$ in **both** mathematical notation and in words.  -->
+<!-- * Also state the method you would use to generate the null distribution (bootstrap, permutation or simulation).  -->
+
+
+**Question 1.**  
+<!-- You work for a independent coffee shop. The boss tells you that she thinks that around 40% of people in the town (population 30,000) know of the coffee shop, but you are skeptical of the estimate. You conduct a random survey of 200 people in the town, asking if respondents are aware of your coffee shop. You want to use the sample to test the hypothesis that 40% or more of the town's population have heard of the coffee shop.  -->
+
+I would use a One-sample hypothesis tests - testing proportions
+If I am surveying 200 people I would be looking to see what the proportion is who have heard of the coffee shop, and if it was above or below 80/200, i.e 40%.  I would use a bootstrap method to form the null distribution, as this would sample with replacement, and I would test both ends of the null distribution, left & right.
+
+H0:πawareness_level = 0.4 (The awareness level is 40%)
+Ha:πawareness_level ≠ 0.4 (The awareness level is not 40%)
+
+
+
+
+**Question 2.**  
+<!-- You work for a website design company and have performed an **A/B test** on the position of a banner on a website promoting a particular item.  -->
+
+<!-- **A/B testing**  -->
+<!-- A method comparing two versions of a web page, email, flyer or other marketing device against each other to determine which version performs better. As it is essentially a controlled experiment, the design should try to ensure that the groups experiencing both versions of the marketing device are equivalent and representative of the population. -->
+
+<!-- You selected five days at random last month and then randomly selected $200$ of each sampled day's users into group $A$ and another $200$ of that day's users into group $B$. Group $A$ continued to be shown the banner at the right hand side of the webpage (its usual position) while group $B$ was shown the banner at the top of the page. You monitored each sampled user's interactions with the website, in particular the 'click through rate' (CTR) on the banner, i.e. what proportion of sampled users clicked on the banner. You want to use the sampled data to test the hypothesis that website users overall are more likely to click on the banner if positioned at the top of the page    -->
+
+I would test both groups against each other, similar to Q1, a one-sample hypothesis test for proportion.  I'm testing if Group B has a higher % than Group A, in this case success is click through rate (CTR). Null distribution method would be permute, stat would be the CTR variance.
+
+H0: πgroup_a - πgroup_b < 0 (Group A's CTR is less than Group B's CTR)
+Ha: πgroup_a - πgroup_b => 0 (Group A's CTR is equal or greater than Group B's CTR)
+
+
+
+**Question 3.**  
+<!-- You work as an analyst for a car manufacturing company - they have specific standards they must meet for standards and regulation purposes. You have been asked to check the quality control of the manufacture of a particular car part. You have been given data on a sample of $200$ parts produced over the period of a week (the sampled parts were pulled at random from the production line and measured: the factory produced a lot more than $200$ parts that week). The specification of the part stipulates a width of $145\textrm{mm}$, and the manufacturing process is said to have 'drifted' if the mean width of parts differs significantly from $145\textrm{mm}$. You want to use the sampled measurements to test whether the process overall has drifted.      -->
+
+For this one , I would run a one-sample mean test, testing if the sample mean varies from the required stat of 145mm.
+Null distribution would be bootstrap method (sampling with replacement).  It would be a two sided test.
+
+H0: μaverage_width = 145 (the part width mean is 145)
+Ha: μaverage_width ≠ 145 (the part width mean is higher or lower than 145)
+
+
+
+<!-- ## Hypothesis Testing - Interpreting the results -->
+<!-- For the 3 business problems stated above, imagine we performed you got the following p-values (with the given significance levels) write out your interpretation of the results.  -->
+
+**Question 1.**  
+
+<!-- **Coffee shop problem**. Significance level: 0.05, calculated $p$-value: 0.07 -->
+The p-value is greater than α then we should fail to reject the null hypothesis.
+This test uses the "standard" significance level
+
+
+**Question 2.**  
+
+<!-- **Website company problem**. Significance level: 0.01, $p$-value: 0.006 -->
+If the p-value is less than α then we should reject the null hypothesis.
+In this case it is highly likely that the alternate hypothesis is true given how far off the p-value is.
+This test uses a stricter significance level than the "standard".
+
+**Question 3.**  
+
+<!-- **Manufacturing company problem**. Significance level: 0.05, $p$-value: 0.55 -->
+Although close, if the p-value is greater than α then should we fail to reject the null hypothesis
+This test uses the "standard" significance level
