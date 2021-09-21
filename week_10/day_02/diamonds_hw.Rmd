@@ -1,0 +1,103 @@
+---
+title: "Homework - features and elements of multiple regression"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    df_print: paged
+    css: ../../../styles.css
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.align = 'center')
+```
+
+# MVP
+
+1. Load the `diamonds.csv` data set and undertake an initial exploration of the data. You will find a description of the meanings of the variables on the relevant [Kaggle page](https://www.kaggle.com/shivam2503/diamonds/)
+```{r}
+library(tidyverse)
+diamonds <- read_csv("data/diamonds.csv") %>% 
+  glimpse()
+```
+2. We expect the `carat` of the diamonds to be strong correlated with the physical dimensions `x`, `y` and `z`. Use `ggpairs()` to investigate correlations between these four variables.
+
+```{r}
+library(GGally)
+ggpairs(diamonds)
+```
+## x, y, z all have a strong, positive correlation with 'carat' ##
+
+
+3. So, we do find significant correlations. Let's drop columns `x`, `y` and `z` from the dataset, in preparation to use only `carat` going forward.
+diamonds
+```{r}
+diamonds <- diamonds %>% 
+  select(-X1, - x, -y, -z)
+# Removed X1 column that was filled in on data import
+```
+
+
+4. We are interested in developing a regression model for the `price` of a diamond in terms of the possible predictor variables in the dataset. 
+
+  i. Use `ggpairs()` to investigate correlations between `price` and the predictors (this may take a while to run, don't worry, make coffee or something).
+```{r}
+ggpairs(diamonds)
+```
+# Very high correlation between price & carat, very low correlation between price, depth, & table.  
+# Other predictors need further investigation.
+
+  ii. Perform further `ggplot` visualisations of any significant correlations you find.
+```{r}
+
+```
+
+
+
+5. Shortly we may try a regression fit using one or more of the categorical predictors `cut`, `clarity` and `color`, so let's investigate these predictors. Investigate the levels of these predictors. How many dummy variables do you expect for each of them?
+```{r}
+diamonds %>% 
+  distinct(cut)
+# 5 dummy variables required
+```
+```{r}
+diamonds %>% 
+  distinct(clarity)
+# 8 dummy variables required
+
+```
+```{r}
+diamonds %>% 
+  distinct(color)
+# 7 dummy variables required
+```
+6. Start with simple linear regression. Regress `price` on `carat` and check the regression diagnostics.
+```{r}
+diamonds %>%
+  ggplot(aes(x = price, y = carat)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+```
+```{r}
+library(ggfortify)
+model <- lm(carat ~ price, data = diamonds)
+autoplot(model)
+```
+```{r}
+summary(model)
+# Summary shows a high R^ and p numbers look good too, strong correlation confirmed.
+```
+
+7. Add another predictor of your choice. Check your assumptions, diagnostics, and interpret the model.
+```{r}
+model2 <- lm(carat ~ price + cut, data = diamonds)
+autoplot(model2) 
+```
+```{r}
+summary(model2)
+```
+# high, positive correlation adding the 'cut' predictor to carat/price. R^ of .86 confirms this and p number looks good for every entry
+
+    
