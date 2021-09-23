@@ -1,0 +1,73 @@
+---
+title: 'Manual model development'
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    df_print: paged
+    css: ../../../styles.css
+  pdf_document: default
+---
+
+
+# MVP
+
+# Question 1
+
+Tidy up the data ready for regression:
+```{r}
+library(tidyverse)
+kc <- read_csv("data/kc_house_data.csv") 
+glimpse(kc)
+
+# Load data, renamed as kc for King County, glimpse to see what the dataset contains, especially data types,
+```
+```{r}
+kc_tidy <- kc %>% 
+  mutate(grade_a = ifelse(grade >= 11, 1, 0)) %>%
+  mutate(grade_b = ifelse(grade >= 4 & grade < 11, 1, 0)) %>%
+  mutate(grade_c = ifelse(grade < 4, 1, 0)) %>%
+  mutate(across(c("waterfront", renovated = "yr_renovated"), as.logical)) %>% 
+  select(-c(id, date, grade, yr_renovated, zipcode, sqft_living15, sqft_lot15))
+    
+#  Data cleaning, binned the grade variable into 3 groups A, B, & C depending on their value. 
+#  Corresponds with above standard, standard, and below standard.
+#  Changed waterfront & yr_renovated to logical data types, renamed yr_renovated also.
+#  Removed variables no longer required or not relevant.
+```
+
+
+
+# Question 2
+
+Check for aliased variables using the `alias()` function (this takes in a formula object and a data set). [**Hint** - formula `price ~ .` says 'price varying with all predictors', this is a suitable input to `alias()`]. Remove variables that lead to an alias. Check the 'Elements of multiple regression' lesson for a dropdown containing further information on finding aliased variables in a dataset.
+```{r}
+alias(lm(price ~ ., data = kc_tidy))
+```
+```{r}
+kc_tidy <- kc_tidy %>% 
+  select(-c(sqft_basement, grade_c))
+  #  Removed 2 variables showing as aliases from first scan, rerun alias below to ensure all were gone.
+alias(lm(price ~ ., data = kc_tidy))
+```
+
+
+# Question 3
+
+Systematically build a regression model containing up to **four** main effects
+
+```{r}
+kc_tidy_numeric <- kc_tidy %>%
+  select_if(is.numeric)
+
+kc_tidy_nonnumeric <- kc_tidy %>%
+  select_if(function(x) !is.numeric(x))
+
+kc_tidy_nonnumeric$price <- kc_tidy$price
+
+library(GGally)
+ggpairs(kc_tidy_numeric)
+ggpairs(kc_tidy_nonnumeric)
+```
+# Kinda stuck here as diagram is unreadable?
