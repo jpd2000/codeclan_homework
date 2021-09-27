@@ -1,0 +1,166 @@
+---
+title: "Weekend Homework - Model Building"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    df_print: paged
+    css: ../../../styles.css
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.align = 'center')
+```
+
+# MVP
+
+# Load avocado data, clean the variable names, and have a 1st look at the data/types.
+```{r}
+library(tidyverse)
+library(janitor)
+avocado <- read_csv("data/avocado.csv") %>% 
+clean_names() %>% 
+glimpse()
+```
+
+DATA CLEANING
+
+```{r}
+#  Use Lubridate to extract month from date into new month column
+#  Change year from dbl to factor
+#  Remove unnecessary columns and reorder to make it easier to view/double check...personal quirk!
+
+library(lubridate)
+avocado_clean <- avocado %>% 
+mutate(month = month(date, label = TRUE)) %>% 
+  mutate(year = as.factor(year)) %>% 
+select(year,
+       month,
+       region,
+       type,
+       average_price,
+       total_volume,
+       x4046,
+       x4225,
+       x4770,
+       total_bags,
+       small_bags,
+       large_bags)
+       
+```
+
+```{r}
+# Check region field, could be duplication of data between city, state & regions eg Columbus & Ohio listed
+avocado_clean %>% 
+  distinct(region)
+```
+
+
+```{r}
+# Regions cleaned to remove sub-cities/regions
+avocado_clean_regional <- avocado_clean %>% 
+  filter(region %in% c("California", "GreatLakes", "Midsouth", "Northeast", "Plains", "SouthCentral", "Southeast",  "West"))
+```
+
+```{r}
+# Data pivoted to group product volume under new "product_code" variable
+avocado_clean2 <- avocado_clean_regional %>% 
+pivot_longer(x4046:x4770, names_to = "product_code", values_to = "volume")
+```
+
+```{r}
+# Data pivoted to group bag volume under new "bag_type" variable.
+# Remove columns no longer required, change categorical variables to factors from character data types.
+avocado_clean3 <- avocado_clean2 %>% 
+pivot_longer(small_bags:large_bags, names_to = "bag_type", values_to = "#_bags") %>% 
+  select(-c(total_volume, total_bags)) %>% 
+  mutate_at(c("type", "product_code", "bag_type"), as.factor)
+```
+
+
+Model Building
+
+```{r}
+# Load libraries that may be required for modelling/predicting
+library(modelr)
+library(GGally)
+library(leaps)
+```
+
+```{r}
+# Run ggpairs to see if there are any standout correlations in the data
+avocado_clean3 %>% 
+  ggpairs(aes(x = average_price, alpha = 0.5))
+
+# Largest variation/correlation seems to be average price x type or product_code
+```
+
+```{r}
+# Regsubset to create a regression model for the average_price against all other variables, 
+# there are 8 others so these 8 will be the potential predictors.
+regsubsets_forward <- regsubsets(average_price ~ ., data = avocado_clean3, nvmax = 8, method = "forward")
+sum_regsubsets_forward <- summary(regsubsets_forward)
+sum_regsubsets_forward
+```
+
+```{r}
+sum_regsubsets_forward$which
+```
+
+```{r}
+# Plot data with adjusted r^2
+plot(regsubsets_forward, scale = "adjr2")
+
+# Again, whether the avocado is organic or not seems to be the biggest factor on price
+```
+
+```{r}
+# PLot data using bic
+plot(regsubsets_forward, scale = "bic")
+```
+
+```{r}
+plot(sum_regsubsets_forward$rsq, type = "b")
+# Plotting shows r^2 increases with every additional predictor
+```
+
+```{r}
+plot(sum_regsubsets_forward$bic, type = "b")
+# # Plotting using bic shows almost linear decrease
+```
+
+```{r}
+#  Runnign backwards & exhaustive methods to gain extra insight
+regsubsets_backward <- regsubsets(average_price ~ ., data = avocado_clean3, nvmax = 8, method = "backward")
+regsubsets_exhaustive <- regsubsets(average_price ~ ., data = avocado_clean3, nvmax = 8, method = "exhaustive")
+
+
+plot(regsubsets_forward, scale = "adjr2")
+plot(regsubsets_backward, scale = "adjr2")
+```
+
+```{r}
+ggpairs(avocado_clean3, columns = c(3, 4, 5, 6))
+```
+
+```{r}
+# Running some manual models to see if I can find out anything else. This one is price against type i.e. organic or not
+model1 <- lm(average_price ~ type, data = avocado_clean3)
+summary(model1)
+# R^ value is much lower than I anticipated.
+```
+```{r}
+# This model is testing price against product_code
+model2 <- lm(average_price ~ product_code, data = avocado_clean3)
+summary(model2)
+```
+
+```{r}
+# This model is testing price against region, R^ again very low though
+model3 <- lm(average_price ~ region, data = avocado_clean3)
+summary(model3)
+
+```
+
