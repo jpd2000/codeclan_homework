@@ -1,0 +1,170 @@
+---
+title: "Decision trees homework"
+output:
+  pdf_document: default
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    df_print: paged
+    css: ../../../styles.css
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.align = "center")
+```
+
+```{r, warning = FALSE, message = FALSE}
+library(rpart)
+library(rpart.plot)
+library(tidyverse)
+library(janitor)
+titanic_set <- read_csv('data/titanic_decision_tree_data.csv')
+
+shuffle_index <- sample(1:nrow(titanic_set))
+
+# shuffle the data so class order isn't in order - need this for training/testing split later on 
+titanic_set <- titanic_set[shuffle_index, ]
+```
+
+
+# MVP 
+
+## Question 1  
+
+```{r}
+# View the data
+summary(titanic_set)
+```
+
+```{r}
+# Create new dataset and filter by survival flag
+titanic_clean <- titanic_set %>%
+  filter(!is.na(survived)) %>% 
+# Convert to factor level and select only required columns, remove any other NA's
+	mutate(sex = as.factor(sex), 
+	       age_status = as.factor(if_else(age <= 16, "Child", "Adult")),
+         class = factor(pclass, levels = c(1,2,3), labels = c("Upper", "Middle","Lower")), 
+	       survived = factor(survived, levels = c(0,1), labels = c("No", "Yes")), 
+	       origin_port = as.factor(embarked)) %>%
+  select(sex, age_status, class, origin_port, sib_sp, parch, survived) %>%
+  na.omit()
+```
+
+
+## Question 2  
+
+```{r}
+titanic_clean %>% 
+  ggplot(aes(x = age_status, fill = survived)) + 
+  geom_bar() + 
+  facet_grid(.~sex) + 
+  theme_bw()
+
+# Looking to see the relationship between surviving and age/gender.
+# Data shows far higher chance of surviving if female in both adult & child groups.
+# Adult males have worst chance of survival and highest amount of overall deaths.
+```
+
+
+```{r}
+titanic_clean %>% 
+  ggplot(aes(x = class, fill = survived)) + 
+  geom_bar() + 
+  facet_grid(.~sex) + 
+  theme_bw()
+
+# Looking at relationship between surviving and class/gender
+# Data shows far higher chance of surviving if female and middle or upper class, lower class women are much more likely to have died.
+# In males, the story is different, middle class males are proportionally worse off but lower class males make up the largest total overall.
+```
+
+## Question 3  
+```{r}
+# Get the number of rows to work out the percentage
+n_data <- nrow(titanic_clean)
+
+# Create a test sample index at 20% for an 80/20 split, this is a standard split.
+test_index <- sample(1:n_data, size = n_data*0.2)
+
+# Create test set
+titanic_test  <- slice(titanic_clean, test_index)
+
+# Create training set
+titanic_train <- slice(titanic_clean, -test_index)
+```
+
+```{r}
+# Check test set for balance
+titanic_test %>%
+ tabyl(survived)
+```
+```{r}
+# Check training set for balance against test set
+titanic_train %>% 
+  tabyl(survived)
+# Both sets are similar at around 50/50 & 60/40 respectively
+```
+## Question 4      
+```{r}
+titanic_fit <- rpart(
+  formula = survived ~ ., 
+  data = titanic_train, 
+  method = 'class'
+)
+
+rpart.plot(titanic_fit, 
+           yesno = 2, 
+           fallen.leaves = TRUE, 
+           faclen = 6, 
+           digits = 4)
+```
+## Question 5    
+
+# The root node shows a 38.95% chance of NOT surviving, all other factors being equal.
+# The variables picked are gender, class, and age as expected. sib_sp has been added though, due to being significant.
+# When gender is added to "not surviving", the prediction is that only 19.29% of men will survive, compared to 74.7% of women
+# For the women who wouldn't survive 46.25% of them would be in Lower Class, compared to 93.44 of non-Lower Class who would survive 
+# The lowest chance of survival seems to be females who have over 3 siblings or spouses with a rate of 0. This could be an anomaly though.
+# Regarding the age variable, adults seem to fare better with a predicted survival rate of 76.19% compared to 41.18%
+
+
+## Question 6     
+
+```{r}
+library(modelr)
+# Add predictions
+titanic_test_pred <- titanic_test %>%
+  add_predictions(titanic_fit, type = 'class')
+```
+
+```{r}
+# Visual check of reasonableness of the survival prediction
+titanic_test_pred %>% 
+  select(sex, class, sib_sp, age_status, survived, pred)
+```
+```{r}
+# Check model performance
+library(yardstick)
+conf_mat <- titanic_test_pred %>% 
+  conf_mat(truth = survived, estimate = pred)
+conf_mat
+
+# Performance check shows a mixed result, false positive rate is high at 31 against true negative of 74.
+# True positive rate of 35 is much better against false negative of only 2.
+```
+
+```{r}
+accuracy <- titanic_test_pred %>%
+ accuracy(truth = survived, estimate = pred)
+accuracy 
+# 76% rate of successful prediction returned
+```
+
+
+```{r}
+# For completeness,  caret package used to create a confusion matrix
+library(caret)
+confusionMatrix(titanic_test_pred$pred, titanic_test_pred$survived)  
+```
+

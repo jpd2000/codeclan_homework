@@ -1,0 +1,531 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{ifxetex,ifluatex}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={Decision trees homework},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifluatex
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\title{Decision trees homework}
+\author{}
+\date{\vspace{-2.5em}}
+
+\begin{document}
+\maketitle
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(rpart)}
+\FunctionTok{library}\NormalTok{(rpart.plot)}
+\FunctionTok{library}\NormalTok{(tidyverse)}
+\FunctionTok{library}\NormalTok{(janitor)}
+\NormalTok{titanic\_set }\OtherTok{\textless{}{-}} \FunctionTok{read\_csv}\NormalTok{(}\StringTok{\textquotesingle{}data/titanic\_decision\_tree\_data.csv\textquotesingle{}}\NormalTok{)}
+
+\NormalTok{shuffle\_index }\OtherTok{\textless{}{-}} \FunctionTok{sample}\NormalTok{(}\DecValTok{1}\SpecialCharTok{:}\FunctionTok{nrow}\NormalTok{(titanic\_set))}
+
+\CommentTok{\# shuffle the data so class order isn\textquotesingle{}t in order {-} need this for training/testing split later on }
+\NormalTok{titanic\_set }\OtherTok{\textless{}{-}}\NormalTok{ titanic\_set[shuffle\_index, ]}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{mvp}{%
+\section{MVP}\label{mvp}}
+
+\hypertarget{question-1}{%
+\subsection{Question 1}\label{question-1}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# View the data}
+\FunctionTok{summary}\NormalTok{(titanic\_set)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##        X1        passenger_id      pclass          name          
+##  Min.   :   1   Min.   :   1   Min.   :1.000   Length:1309       
+##  1st Qu.: 328   1st Qu.: 328   1st Qu.:2.000   Class :character  
+##  Median : 655   Median : 655   Median :3.000   Mode  :character  
+##  Mean   : 655   Mean   : 655   Mean   :2.295                     
+##  3rd Qu.: 982   3rd Qu.: 982   3rd Qu.:3.000                     
+##  Max.   :1309   Max.   :1309   Max.   :3.000                     
+##                                                                  
+##      sex                 age            sib_sp           parch      
+##  Length:1309        Min.   : 0.17   Min.   :0.0000   Min.   :0.000  
+##  Class :character   1st Qu.:21.00   1st Qu.:0.0000   1st Qu.:0.000  
+##  Mode  :character   Median :28.00   Median :0.0000   Median :0.000  
+##                     Mean   :29.88   Mean   :0.4989   Mean   :0.385  
+##                     3rd Qu.:39.00   3rd Qu.:1.0000   3rd Qu.:0.000  
+##                     Max.   :80.00   Max.   :8.0000   Max.   :9.000  
+##                     NA's   :263                                     
+##     ticket               fare            cabin             embarked        
+##  Length:1309        Min.   :  0.000   Length:1309        Length:1309       
+##  Class :character   1st Qu.:  7.896   Class :character   Class :character  
+##  Mode  :character   Median : 14.454   Mode  :character   Mode  :character  
+##                     Mean   : 33.295                                        
+##                     3rd Qu.: 31.275                                        
+##                     Max.   :512.329                                        
+##                     NA's   :1                                              
+##     survived     
+##  Min.   :0.0000  
+##  1st Qu.:0.0000  
+##  Median :0.0000  
+##  Mean   :0.3838  
+##  3rd Qu.:1.0000  
+##  Max.   :1.0000  
+##  NA's   :418
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Create new dataset and filter by survival flag}
+\NormalTok{titanic\_clean }\OtherTok{\textless{}{-}}\NormalTok{ titanic\_set }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{filter}\NormalTok{(}\SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(survived)) }\SpecialCharTok{\%\textgreater{}\%} 
+\CommentTok{\# Convert to factor level and select only required columns, remove any other NA\textquotesingle{}s}
+    \FunctionTok{mutate}\NormalTok{(}\AttributeTok{sex =} \FunctionTok{as.factor}\NormalTok{(sex), }
+           \AttributeTok{age\_status =} \FunctionTok{as.factor}\NormalTok{(}\FunctionTok{if\_else}\NormalTok{(age }\SpecialCharTok{\textless{}=} \DecValTok{16}\NormalTok{, }\StringTok{"Child"}\NormalTok{, }\StringTok{"Adult"}\NormalTok{)),}
+         \AttributeTok{class =} \FunctionTok{factor}\NormalTok{(pclass, }\AttributeTok{levels =} \FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{2}\NormalTok{,}\DecValTok{3}\NormalTok{), }\AttributeTok{labels =} \FunctionTok{c}\NormalTok{(}\StringTok{"Upper"}\NormalTok{, }\StringTok{"Middle"}\NormalTok{,}\StringTok{"Lower"}\NormalTok{)), }
+           \AttributeTok{survived =} \FunctionTok{factor}\NormalTok{(survived, }\AttributeTok{levels =} \FunctionTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{,}\DecValTok{1}\NormalTok{), }\AttributeTok{labels =} \FunctionTok{c}\NormalTok{(}\StringTok{"No"}\NormalTok{, }\StringTok{"Yes"}\NormalTok{)), }
+           \AttributeTok{origin\_port =} \FunctionTok{as.factor}\NormalTok{(embarked)) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{select}\NormalTok{(sex, age\_status, class, origin\_port, sib\_sp, parch, survived) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{na.omit}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{question-2}{%
+\subsection{Question 2}\label{question-2}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{titanic\_clean }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{ggplot}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ age\_status, }\AttributeTok{fill =}\NormalTok{ survived)) }\SpecialCharTok{+} 
+  \FunctionTok{geom\_bar}\NormalTok{() }\SpecialCharTok{+} 
+  \FunctionTok{facet\_grid}\NormalTok{(.}\SpecialCharTok{\textasciitilde{}}\NormalTok{sex) }\SpecialCharTok{+} 
+  \FunctionTok{theme\_bw}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics{homework_files/figure-latex/unnamed-chunk-4-1} \end{center}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Looking to see the relationship between surviving and age/gender.}
+\CommentTok{\# Data shows far higher chance of surviving if female in both adult \& child groups.}
+\CommentTok{\# Adult males have worst chance of survival and highest amount of overall deaths.}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{titanic\_clean }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{ggplot}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ class, }\AttributeTok{fill =}\NormalTok{ survived)) }\SpecialCharTok{+} 
+  \FunctionTok{geom\_bar}\NormalTok{() }\SpecialCharTok{+} 
+  \FunctionTok{facet\_grid}\NormalTok{(.}\SpecialCharTok{\textasciitilde{}}\NormalTok{sex) }\SpecialCharTok{+} 
+  \FunctionTok{theme\_bw}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics{homework_files/figure-latex/unnamed-chunk-5-1} \end{center}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Looking at relationship between surviving and class/gender}
+\CommentTok{\# Data shows far higher chance of surviving if female and middle or upper class, lower class women are much more likely to have died.}
+\CommentTok{\# In males, the story is different, middle class males are proportionally worse off but lower class males make up the largest total overall.}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{question-3}{%
+\subsection{Question 3}\label{question-3}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Get the number of rows to work out the percentage}
+\NormalTok{n\_data }\OtherTok{\textless{}{-}} \FunctionTok{nrow}\NormalTok{(titanic\_clean)}
+
+\CommentTok{\# Create a test sample index at 20\% for an 80/20 split, this is a standard split.}
+\NormalTok{test\_index }\OtherTok{\textless{}{-}} \FunctionTok{sample}\NormalTok{(}\DecValTok{1}\SpecialCharTok{:}\NormalTok{n\_data, }\AttributeTok{size =}\NormalTok{ n\_data}\SpecialCharTok{*}\FloatTok{0.2}\NormalTok{)}
+
+\CommentTok{\# Create test set}
+\NormalTok{titanic\_test  }\OtherTok{\textless{}{-}} \FunctionTok{slice}\NormalTok{(titanic\_clean, test\_index)}
+
+\CommentTok{\# Create training set}
+\NormalTok{titanic\_train }\OtherTok{\textless{}{-}} \FunctionTok{slice}\NormalTok{(titanic\_clean, }\SpecialCharTok{{-}}\NormalTok{test\_index)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Check test set for balance}
+\NormalTok{titanic\_test }\SpecialCharTok{\%\textgreater{}\%}
+ \FunctionTok{tabyl}\NormalTok{(survived)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##  survived  n   percent
+##        No 78 0.5492958
+##       Yes 64 0.4507042
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Check training set for balance against test set}
+\NormalTok{titanic\_train }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{tabyl}\NormalTok{(survived)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##  survived   n   percent
+##        No 346 0.6070175
+##       Yes 224 0.3929825
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Both sets are similar at around 50/50 \& 60/40 respectively}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{question-4}{%
+\subsection{Question 4}\label{question-4}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{titanic\_fit }\OtherTok{\textless{}{-}} \FunctionTok{rpart}\NormalTok{(}
+  \AttributeTok{formula =}\NormalTok{ survived }\SpecialCharTok{\textasciitilde{}}\NormalTok{ ., }
+  \AttributeTok{data =}\NormalTok{ titanic\_train, }
+  \AttributeTok{method =} \StringTok{\textquotesingle{}class\textquotesingle{}}
+\NormalTok{)}
+
+\FunctionTok{rpart.plot}\NormalTok{(titanic\_fit, }
+           \AttributeTok{yesno =} \DecValTok{2}\NormalTok{, }
+           \AttributeTok{fallen.leaves =} \ConstantTok{TRUE}\NormalTok{, }
+           \AttributeTok{faclen =} \DecValTok{6}\NormalTok{, }
+           \AttributeTok{digits =} \DecValTok{4}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics{homework_files/figure-latex/unnamed-chunk-9-1} \end{center}
+
+\hypertarget{question-5}{%
+\subsection{Question 5}\label{question-5}}
+
+\hypertarget{the-root-node-shows-a-38.95-chance-of-not-surviving-all-other-factors-being-equal.}{%
+\section{The root node shows a 38.95\% chance of NOT surviving, all
+other factors being
+equal.}\label{the-root-node-shows-a-38.95-chance-of-not-surviving-all-other-factors-being-equal.}}
+
+\hypertarget{the-variables-picked-are-gender-class-and-age-as-expected.-sib_sp-has-been-added-though-due-to-being-significant.}{%
+\section{The variables picked are gender, class, and age as expected.
+sib\_sp has been added though, due to being
+significant.}\label{the-variables-picked-are-gender-class-and-age-as-expected.-sib_sp-has-been-added-though-due-to-being-significant.}}
+
+\hypertarget{when-gender-is-added-to-not-surviving-the-prediction-is-that-only-19.29-of-men-will-survive-compared-to-74.7-of-women}{%
+\section{When gender is added to ``not surviving'', the prediction is
+that only 19.29\% of men will survive, compared to 74.7\% of
+women}\label{when-gender-is-added-to-not-surviving-the-prediction-is-that-only-19.29-of-men-will-survive-compared-to-74.7-of-women}}
+
+\hypertarget{for-the-women-who-wouldnt-survive-46.25-of-them-would-be-in-lower-class-compared-to-93.44-of-non-lower-class-who-would-survive}{%
+\section{For the women who wouldn't survive 46.25\% of them would be in
+Lower Class, compared to 93.44 of non-Lower Class who would
+survive}\label{for-the-women-who-wouldnt-survive-46.25-of-them-would-be-in-lower-class-compared-to-93.44-of-non-lower-class-who-would-survive}}
+
+\hypertarget{the-lowest-chance-of-survival-seems-to-be-females-who-have-over-3-siblings-or-spouses-with-a-rate-of-0.-this-could-be-an-anomaly-though.}{%
+\section{The lowest chance of survival seems to be females who have over
+3 siblings or spouses with a rate of 0. This could be an anomaly
+though.}\label{the-lowest-chance-of-survival-seems-to-be-females-who-have-over-3-siblings-or-spouses-with-a-rate-of-0.-this-could-be-an-anomaly-though.}}
+
+\hypertarget{regarding-the-age-variable-adults-seem-to-fare-better-with-a-predicted-survival-rate-of-76.19-compared-to-41.18}{%
+\section{Regarding the age variable, adults seem to fare better with a
+predicted survival rate of 76.19\% compared to
+41.18\%}\label{regarding-the-age-variable-adults-seem-to-fare-better-with-a-predicted-survival-rate-of-76.19-compared-to-41.18}}
+
+\hypertarget{question-6}{%
+\subsection{Question 6}\label{question-6}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(modelr)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning: package 'modelr' was built under R version 4.1.1
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Add predictions}
+\NormalTok{titanic\_test\_pred }\OtherTok{\textless{}{-}}\NormalTok{ titanic\_test }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{add\_predictions}\NormalTok{(titanic\_fit, }\AttributeTok{type =} \StringTok{\textquotesingle{}class\textquotesingle{}}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Visual check of reasonableness of the survival prediction}
+\NormalTok{titanic\_test\_pred }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{select}\NormalTok{(sex, class, sib\_sp, age\_status, survived, pred)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 142 x 6
+##    sex    class  sib_sp age_status survived pred 
+##    <fct>  <fct>   <dbl> <fct>      <fct>    <fct>
+##  1 male   Upper       2 Adult      Yes      No   
+##  2 female Upper       1 Adult      Yes      Yes  
+##  3 female Middle      1 Adult      Yes      Yes  
+##  4 female Lower       0 Adult      Yes      Yes  
+##  5 male   Middle      2 Adult      No       No   
+##  6 female Upper       0 Adult      Yes      Yes  
+##  7 male   Lower       0 Adult      No       No   
+##  8 male   Middle      0 Child      Yes      Yes  
+##  9 female Lower       1 Adult      Yes      No   
+## 10 male   Middle      0 Adult      No       No   
+## # ... with 132 more rows
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Check model performance}
+\FunctionTok{library}\NormalTok{(yardstick)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning: package 'yardstick' was built under R version 4.1.1
+\end{verbatim}
+
+\begin{verbatim}
+## For binary classification, the first factor level is assumed to be the event.
+## Use the argument `event_level = "second"` to alter this as needed.
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## Attaching package: 'yardstick'
+\end{verbatim}
+
+\begin{verbatim}
+## The following objects are masked from 'package:modelr':
+## 
+##     mae, mape, rmse
+\end{verbatim}
+
+\begin{verbatim}
+## The following object is masked from 'package:readr':
+## 
+##     spec
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{conf\_mat }\OtherTok{\textless{}{-}}\NormalTok{ titanic\_test\_pred }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{conf\_mat}\NormalTok{(}\AttributeTok{truth =}\NormalTok{ survived, }\AttributeTok{estimate =}\NormalTok{ pred)}
+\NormalTok{conf\_mat}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##           Truth
+## Prediction No Yes
+##        No  76  29
+##        Yes  2  35
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Performance check shows a mixed result, false positive rate is high at 31 against true negative of 74.}
+\CommentTok{\# True positive rate of 35 is much better against false negative of only 2.}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{accuracy }\OtherTok{\textless{}{-}}\NormalTok{ titanic\_test\_pred }\SpecialCharTok{\%\textgreater{}\%}
+ \FunctionTok{accuracy}\NormalTok{(}\AttributeTok{truth =}\NormalTok{ survived, }\AttributeTok{estimate =}\NormalTok{ pred)}
+\NormalTok{accuracy }
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 1 x 3
+##   .metric  .estimator .estimate
+##   <chr>    <chr>          <dbl>
+## 1 accuracy binary         0.782
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# 76\% rate of successful prediction returned}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# For completeness,  caret package used to create a confusion matrix}
+\FunctionTok{library}\NormalTok{(caret)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning: package 'caret' was built under R version 4.1.1
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: lattice
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## Attaching package: 'caret'
+\end{verbatim}
+
+\begin{verbatim}
+## The following objects are masked from 'package:yardstick':
+## 
+##     precision, recall, sensitivity, specificity
+\end{verbatim}
+
+\begin{verbatim}
+## The following object is masked from 'package:purrr':
+## 
+##     lift
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{confusionMatrix}\NormalTok{(titanic\_test\_pred}\SpecialCharTok{$}\NormalTok{pred, titanic\_test\_pred}\SpecialCharTok{$}\NormalTok{survived)  }
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction No Yes
+##        No  76  29
+##        Yes  2  35
+##                                           
+##                Accuracy : 0.7817          
+##                  95% CI : (0.7047, 0.8466)
+##     No Information Rate : 0.5493          
+##     P-Value [Acc > NIR] : 6.806e-09       
+##                                           
+##                   Kappa : 0.5417          
+##                                           
+##  Mcnemar's Test P-Value : 3.016e-06       
+##                                           
+##             Sensitivity : 0.9744          
+##             Specificity : 0.5469          
+##          Pos Pred Value : 0.7238          
+##          Neg Pred Value : 0.9459          
+##              Prevalence : 0.5493          
+##          Detection Rate : 0.5352          
+##    Detection Prevalence : 0.7394          
+##       Balanced Accuracy : 0.7606          
+##                                           
+##        'Positive' Class : No              
+## 
+\end{verbatim}
+
+\end{document}
