@@ -1,0 +1,113 @@
+---
+title: "Text Mining Homework"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    df_print: paged
+    css: ../../../styles.css
+  pdf_document: default
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, eval = FALSE, fig.align = "center", message = FALSE, warning = FALSE)
+```
+
+# MVP
+
+Using the dataset `austen_books()` from the package `janeaustenr`:
+
+1. Find the most common words in both Pride & Prejudice and Sense & Sensibility.
+
+```{r}
+#  Load required libraries
+library(tidyverse)
+library(tidytext)
+library(janeaustenr)
+```
+
+```{r}
+#  Create new tibbles for each book and unnest tokens
+pride_book <- tibble(
+  id = 1:length(prideprejudice),
+  text = prideprejudice
+) %>% 
+  unnest_tokens(word, text)
+
+sense_book <- tibble(
+  id = 1:length(sensesensibility),
+  text = sensesensibility
+) %>% 
+  unnest_tokens(word, text)
+```
+
+```{r}
+# Count most common words in Pride & Prejudice
+pride_book %>% 
+count(word, sort = TRUE)
+```
+```{r}
+# Count most common words in Sense & Sensibility
+sense_book %>% 
+count(word, sort = TRUE)
+```
+2. Find the most common words in both Pride & Prejudice and Sense & Sensibility, not including stop words.
+```{r}
+# Redo previous task but remove stop words via anti-join
+pride_book %>%
+  anti_join(stop_words) %>%
+  count(word, sort = TRUE) %>% 
+  head(10)
+```
+```{r}
+# Redo previous task but remove stop words via anti-join
+sense_book %>%
+  anti_join(stop_words) %>%
+  count(word, sort = TRUE) %>% 
+  head(10)
+```
+
+3. Find the most common sentiment words in both Pride & Prejudice and Sense & Sensibility.
+```{r}
+# Create new object of Pride & Prejudice with sentiments counted
+pride_sentiments <- pride_book %>%
+  inner_join(get_sentiments("afinn")) %>% 
+  count(word, sort = TRUE)
+
+pride_sentiments
+```
+```{r}
+# Create new object of Sense & Sensibility with sentiments counted
+sense_sentiments <- sense_book %>%
+  inner_join(get_sentiments("afinn")) %>% 
+  count(word, sort = TRUE)
+
+sense_sentiments
+```
+
+
+# Extension
+
+Taking your results above. Can you create a plot which visualises the differences between the books?  
+```{r}
+# Load austen_book function, filter the two books required, unnest tokens, group into each book.
+#  Create new column to show position of word in the overall book/story arc.
+# GGplot using facet_wrap to show side by side graphs
+
+austen_books() %>%
+  filter(book %in% c("Pride & Prejudice", "Sense & Sensibility")) %>%
+  unnest_tokens(word, text) %>%
+  inner_join(get_sentiments("afinn")) %>%
+  group_by(book) %>%
+  mutate(word_n = row_number()
+  ) %>%
+    mutate(story_arc = word_n/max(word_n) 
+  ) %>% 
+ggplot +
+  aes(x = story_arc, y = value, colour = book) +
+  geom_smooth(se = FALSE) +
+  guides(colour = FALSE) +
+  facet_wrap(~book, nrow = 5)
+```

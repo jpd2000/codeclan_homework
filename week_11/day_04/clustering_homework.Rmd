@@ -1,0 +1,83 @@
+---
+title: "Clustering homework"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Loading required library(s)
+library(tidyverse)
+library(cluster)
+library(factoextra)
+library(dendextend)
+library(broom)
+library(janitor)
+```
+
+```{r}
+#  Import data, clean names, remove columns not useful, not numeric. Question is based on spending score vs Income, so will remove age also.
+customers <- read_csv("data/mall_customers.csv") %>% 
+  clean_names() %>% 
+  select(-c(gender, customer_id, age))
+```
+
+```{r}
+# Initial look at plotted data.
+
+customers %>% 
+  ggplot(aes(x = annual_income_k, y = spending_score_1_100)) +
+  geom_point()
+```
+
+```{r}
+#  Scaling data, as income is in 000's and credit score is 1-100.
+customers_scale <- customers %>% 
+  mutate_if(is.numeric, scale)
+
+head(customers_scale)
+```
+```{r}
+# Finding the best value of K with the elbow method, looks to be around 4.
+fviz_nbclust(customers_scale, kmeans, method = "wss", nstart = 25)
+```
+```{r}
+fviz_nbclust(customers_scale, kmeans, method = "silhouette", nstart = 25)
+#  Thats shown me right up, value of K should be 5
+```
+
+```{r}
+# Create clusters based on a K of 5
+clustered_customers <- kmeans(customers_scale, centers = 5, nstart = 25)
+```
+
+```{r}
+# Check tidy view of new object
+tidy(clustered_customers,
+     col.names = colnames(customers_scale))
+```
+
+```{r}
+# Use augment to see which obversation has been assigned to which cluster
+augment(clustered_customers, customers)
+```
+```{r}
+glance(clustered_customers)
+```
+
+```{r}
+clusterings <- clustered_customers %>% 
+  unnest(glanced)
+```
+
+
+```{r}
+clustered_customers %>% 
+  filter(k == 5) %>% 
+  ggplot(aes(x = annual_income_k, y = spending_score_1_100, colour = .cluster)) +
+  geom_point() +
+  geom_text(size = 3)
+```
+
