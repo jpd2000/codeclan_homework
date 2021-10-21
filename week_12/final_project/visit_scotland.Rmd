@@ -1,0 +1,351 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+library(tidyverse)
+library(janitor)
+```
+
+```{r}
+domestic <- read_csv("original_data/regional_domestic_tourism.csv") %>% clean_names()
+```
+
+```{r}
+national <- read_csv("original_data/international_national.csv") %>% clean_names()
+```
+
+```{r}
+regional <- read_csv("original_data/international_regional.csv") %>% clean_names()
+```
+
+```{r}
+national %>% 
+  select(-c(area, sample)) %>% 
+  group_by(year, market) %>% 
+  summarise(visits_yearly = sum(visits_000s)) %>% 
+  arrange(desc(visits_yearly))
+```
+
+```{r}
+national %>% 
+  select(-c(area, sample)) %>% 
+  group_by(market) %>% 
+  summarise(visits_total = sum(visits_000s)) %>% 
+arrange(desc(visits_total))
+```
+
+```{r}
+national %>% 
+  select(-c(area, sample)) %>% 
+  group_by(market, purpose) %>% 
+  summarise(visits_total = sum(visits_000s)) %>% 
+  arrange(desc(visits_total)) %>% 
+  head(10) %>% 
+  ggplot +
+  geom_col(aes(x = market, y = visits_total/1e3, fill = purpose)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  labs(
+    x = "Country",
+    y = "Total Visits (millions)",
+    fill = "Purpose")  +
+  scale_fill_brewer(palette = "Set1")
+```
+
+```{r}
+national %>% 
+  select(-c(area, sample)) %>% 
+  group_by(market) %>% 
+  summarise(spend_total = sum(spend_m)) %>% 
+  arrange(desc(spend_total))
+```
+
+```{r}
+national %>% 
+  select(-c(area, sample)) %>% 
+  group_by(market) %>% 
+  summarise(spend_total = sum(spend_m)) %>%
+  arrange(desc(spend_total)) %>% 
+  head(10) %>% 
+  ggplot(aes(x = market, y = spend_total)) +
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+
+```{r}
+national %>% 
+  select(-c(area, sample)) %>% 
+  filter(market == "Australia") %>% 
+  group_by(year) %>% 
+  summarise(visits_total = sum(visits_000s)) %>% 
+  arrange(desc(visits_total)) %>% 
+  ggplot(aes(x = year, y = visits_total)) +
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+```
+```{r}
+national %>% 
+  select(-c(area, sample)) %>% 
+  filter(market == "Canada") %>% 
+  group_by(year) %>% 
+  summarise(visits_total = sum(visits_000s)) %>% 
+  arrange(desc(visits_total)) %>% 
+  ggplot(aes(x = year, y = visits_total)) +
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+```{r}
+national %>% 
+  select(-c(area, sample)) %>% 
+  filter(market == "China") %>% 
+  group_by(year, purpose) %>% 
+  summarise(visits_total = sum(visits_000s)) %>% 
+  arrange(desc(visits_total)) %>% 
+  ggplot(aes(x = year, y = visits_total, fill = purpose)) +
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+   labs(x = "Year",
+       y = "Total Visits (000s)", 
+       fill = "Purpose") +
+  scale_fill_brewer(palette = "Set1")
+
+```
+
+```{r}
+national %>% 
+  select(-c(area, sample)) %>% 
+  filter(market == "France") %>% 
+  group_by(year) %>% 
+  summarise(visits_total = sum(visits_000s)) %>% 
+  arrange(desc(visits_total)) %>% 
+  ggplot(aes(x = year, y = visits_total)) +
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+```{r}
+national %>% 
+  select(-c(area, sample)) %>% 
+  filter(market == "Germany") %>% 
+  group_by(year) %>% 
+  summarise(visits_total = sum(visits_000s)) %>% 
+  arrange(desc(visits_total)) %>% 
+  ggplot(aes(x = year, y = visits_total)) +
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+```{r}
+national %>% 
+  select(-c(area, sample)) %>% 
+  filter(market == "Irish Republic") %>% 
+  group_by(year) %>% 
+  summarise(visits_total = sum(visits_000s)) %>% 
+  arrange(desc(visits_total)) %>% 
+  ggplot(aes(x = year, y = visits_total)) +
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+```{r}
+national %>% 
+  select(-c(area, sample)) %>% 
+  filter(market == "Italy") %>% 
+  group_by(year) %>% 
+  summarise(visits_total = sum(visits_000s)) %>% 
+  arrange(desc(visits_total)) %>% 
+  ggplot(aes(x = year, y = visits_total)) +
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+```{r}
+national %>% 
+  select(-c(area, sample)) %>% 
+  filter(market == "Netherlands") %>% 
+  group_by(year) %>% 
+  summarise(visits_total = sum(visits_000s)) %>% 
+  arrange(desc(visits_total)) %>% 
+  ggplot(aes(x = year, y = visits_total)) +
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+```{r}
+national %>% 
+  select(-c(area, sample)) %>% 
+  filter(market == "Spain") %>% 
+  group_by(year) %>% 
+  summarise(visits_total = sum(visits_000s)) %>% 
+  arrange(desc(visits_total)) %>% 
+  ggplot(aes(x = year, y = visits_total)) +
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+```{r}
+national %>% 
+  select(-c(area, sample)) %>% 
+  filter(market == "USA") %>% 
+  group_by(year) %>% 
+  summarise(visits_total = sum(visits_000s)) %>% 
+  arrange(desc(visits_total)) %>% 
+  ggplot() +
+  geom_col(aes(x = year, y = visits_total), fill = "blue2") +
+  labs(x = "Year",
+       y = "Total Visitors (000s)")
+```
+```{r}
+national %>% 
+  select(-c(area, sample)) %>% 
+   group_by(year) %>% 
+  summarise(visits_total = sum(visits_000s)) %>% 
+  arrange(desc(visits_total)) %>% 
+  ggplot(aes(x = year, y = visits_total/1e3)) +
+  geom_line() +
+  geom_point() +
+  labs(
+    x = "Year",
+    y = "Total Visits (millions)")
+```
+
+```{r}
+national %>% 
+  select(-c(area, sample)) %>% 
+  group_by(year) %>% 
+  summarise(visits_total = sum(visits_000s)) %>% 
+arrange(desc(visits_total))
+```
+
+```{r}
+domestic %>% 
+  filter(breakdown_of_domestic_tourism == "Visits") %>% 
+  group_by(date_code, region_of_residence) %>% 
+  summarise(visits_total = sum(value)) %>% 
+    arrange(desc(visits_total))
+```
+
+```{r}
+domestic %>% 
+  filter(breakdown_of_domestic_tourism == "Visits", region_of_residence == "All of GB") %>% 
+  group_by(date_code, region_of_residence) %>% 
+  summarise(visits_total = sum(value)) %>% 
+  arrange(desc(visits_total)) %>% 
+  ggplot +
+  geom_col(aes(x = date_code, y = visits_total/1e3), fill = "firebrick") +
+  labs(x = "Years",
+       y = "Total Visits (millions)")
+```
+
+```{r}
+domestic %>% 
+  filter(breakdown_of_domestic_tourism == "Nights", region_of_residence != "All of GB") %>% 
+  group_by(date_code, region_of_residence) %>% 
+  summarise(visits_total = sum(value)) %>% 
+  arrange(desc(visits_total)) %>% 
+  ggplot +
+  geom_col(aes(x = date_code, y = visits_total/1e3, fill = region_of_residence)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  labs(x = "Years",
+       y = "Total Visits (millions)", 
+       fill = "Origin") +
+  scale_fill_brewer(palette = "Set1")
+```
+
+```{r}
+domestic %>% 
+  filter(breakdown_of_domestic_tourism == "Expenditure", region_of_residence == "All of GB") %>% 
+  group_by(date_code) %>% 
+  summarise(spend_total = sum(value)) %>% 
+  arrange(desc(spend_total)) %>% 
+  ggplot +
+  geom_col(aes(x = date_code, y = spend_total/1e3), fill = "firebrick") +
+  labs(x = "Years",
+       y = "Total Spend (£ Billions)")
+```
+```{r}
+regional %>% 
+  group_by(market, area, purpose) %>% 
+  summarise(visits_total = sum(nights_000s)) %>% 
+  arrange(desc(visits_total)) %>% 
+  ggplot +
+  geom_col(aes(x = area, y = visits_total/1e3, fill = purpose)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  labs(x = "Region",
+       y = "Total Visits (millions)", 
+       fill = "Purpose") +
+  scale_fill_brewer(palette = "Set1")
+```
+```{r}
+national %>% 
+  select(-c(area, sample)) %>% 
+  group_by(market, purpose) %>% 
+  summarise(spend_total = sum(spend_m)) %>% 
+  arrange(desc(spend_total)) %>% 
+  head(10) %>% 
+  ggplot +
+  geom_col(aes(x = market, y = spend_total/1e3, fill = purpose)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  labs(
+    x = "Country",
+    y = "Total Spend (£ Billions)",
+    fill = "Purpose") +
+  scale_fill_brewer(palette = "Set1")
+```
+```{r}
+domestic %>% 
+  filter(breakdown_of_domestic_tourism == "Expenditure", region_of_residence != "All of GB") %>% 
+  group_by(date_code, region_of_residence) %>% 
+  summarise(spend_total = sum(value)) %>% 
+  arrange(desc(spend_total)) %>% 
+  ggplot +
+  geom_col(aes(x = date_code, y = spend_total/1e3, fill = region_of_residence)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+  labs(x = "Years",
+       y = "Total Spend (£ Billions)", 
+       fill = "Origin") +
+  scale_fill_brewer(palette = "Set1")
+```
+```{r}
+national %>% 
+  select(-c(area, sample)) %>% 
+  group_by(market, purpose) %>% 
+  summarise(visits_total = sum(visits_000s)) %>% 
+  arrange(desc(visits_total)) %>% 
+  head(10)
+```
+```{r}
+regional %>% 
+  group_by(market, area, purpose) %>% 
+  summarise(visits_total = sum(nights_000s)) %>% 
+  arrange(desc(visits_total))
+```
+
+```{r}
+national %>% 
+  select(-c(area, sample)) %>% 
+  group_by(market, purpose) %>% 
+  summarise(spend_total = sum(spend_m)) %>% 
+  arrange(desc(spend_total)) %>% 
+  head(10)
+```
+
+```{r}
+national %>% 
+  select(-c(area, sample)) %>% 
+  filter(market == "China") %>% 
+  group_by(year, purpose) %>% 
+  summarise(visits_total = sum(visits_000s)) %>% 
+  arrange(desc(visits_total))
+```
+
+```{r}
+domestic %>% 
+  filter(breakdown_of_domestic_tourism == "Expenditure", region_of_residence != "All of GB") %>% 
+  group_by(date_code, region_of_residence) %>% 
+  summarise(spend_total = sum(value)) %>% 
+  arrange(desc(spend_total))
+```
+
