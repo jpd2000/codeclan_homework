@@ -1,0 +1,144 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(janitor)
+library(here)
+```
+
+```{r}
+# Import data and clean column names
+ps4 <- read_csv("original_data/ps4-game-sales.csv") %>% clean_names()
+xbox <- read_csv("original_data/xbox-one-game-sales.csv") %>% clean_names()
+sales_2016 <- read_csv("original_data/sales-2016-with-ratings.csv") %>% clean_names()
+sales_2019 <- read_csv("original_data/sales-2019.csv") %>% clean_names()
+```
+
+```{r}
+# View structure of the dataset
+sales_2016 %>% 
+  str()
+```
+
+```{r}
+# View structure of the dataset
+sales_2019 %>% 
+  str()
+```
+
+
+```{r}
+# Adding game_id number to keep entries unique to join with 2019 data, adding survey year as an extra identifier 
+# Removed extra columns missing from 2019 data
+sales_2016_clean <- sales_2016 %>%
+  mutate(game_id = row_number()) %>%
+  mutate(year = 2016) %>%
+  select(
+    year,
+    game_id,
+    name,
+    platform,
+    genre,
+    global_sales,
+    critic_score,
+    user_score,
+    rating,
+    developer,
+    publisher,
+    year_of_release
+    ) 
+```
+
+```{r}
+# Adding game_id number to keep entries unique when joining with 2016 data.
+# game_id number needs to start from the end of sales_2016_clean max id.
+# Changed global_sales column to replace na's from total_shipped column.
+# Renamed year column to year_of_release, before creating new year column to 
+# match survey year, changed esrb_rating to rating.
+
+sales_2019_clean <- sales_2019 %>%
+  rename(year_of_release = year) %>% 
+  mutate(game_id = max(sales_2016_clean$game_id) + row_number()) %>%
+  mutate(year = 2019) %>%
+  mutate(global_sales = coalesce(global_sales,total_shipped)) %>% 
+  select(
+    year,
+    game_id,
+    name,
+    platform,
+    genre,
+    global_sales,
+    critic_score,
+    user_score,
+    rating = esrb_rating,
+    developer,
+    publisher,
+    year_of_release
+    ) 
+```
+
+# CHECKING FOR MISSING VALUES
+
+```{r}
+sales_2016_clean %>% 
+  filter(is.na(critic_score))
+# Approx half are na, so will use median to fill in missing values
+```
+
+```{r}
+sales_2016_clean %>% 
+  filter(is.na(user_score))
+# Less than half are na, so will use median to fill in missing values
+```
+```{r}
+sales_2016_clean %>% 
+  filter(is.na(rating))
+```
+
+```{r}
+sales_2016_clean %>% 
+  filter(is.na(developer))
+```
+
+```{r}
+# Replace na observations in the critic_score & user_score columns with the medians of each.
+sales_2016_clean <- sales_2016_clean %>%
+    mutate(critic_score = coalesce(critic_score, median(critic_score, na.rm = TRUE))) %>% 
+     mutate(user_score = coalesce(user_score, median(user_score, na.rm = TRUE)))
+sales_2016_clean
+```
+
+```{r}
+sales_2019_clean %>% 
+  filter(is.na(critic_score))
+
+# Almost 50K observations are NA from total of 55K, will leave this column as-is as only 10% of the data is available
+```
+
+```{r}
+sales_2019_clean %>% 
+  filter(is.na(user_score))
+
+# Almost 50K observations are NA from total of 55K, will leave this column as-is as only 10% of the data is available
+```
+
+```{r}
+sales_2019_clean %>% 
+  filter(is.na(rating))
+```
+
+```{r}
+# Bind 2016 & 2019 sales data
+sales_combined <- rbind(sales_2016_clean, sales_2019_clean)
+```
+
+```{r}
+# Write the cleaned data into clean_data/folder
+write_csv(sales_combined, here("clean_data/sales_combined.csv"))
+```
+
+
+

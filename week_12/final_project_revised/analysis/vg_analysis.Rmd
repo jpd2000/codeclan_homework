@@ -1,0 +1,209 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+library(here)
+library(tidyverse)
+library(janitor)
+```
+
+```{r}
+# Load combined data
+vg_clean_combined <-read_csv(here("clean_data/sales_combined.csv"))
+```
+
+```{r}
+# Loading in original datasets to glean extra info
+sales_2016 <-read_csv(here("original_data/sales-2016-with-ratings.csv")) %>% clean_names()
+sales_2019 <- read_csv(here("original_data/sales-2019.csv")) %>% clean_names()
+ps4 <- read_csv(here("original_data/ps4-game-sales.csv")) %>% clean_names()
+xbox <- read_csv(here("original_data/xbox-one-game-sales.csv")) %>% clean_names()
+```
+
+```{r}
+# Filtering the 2016 data from the combined data 
+clean_2016 <- vg_clean_combined %>% 
+  filter(year == "2016")
+```
+
+```{r}
+# Checking data for NAs in sales data
+clean_2016 %>% 
+  filter(is.na(global_sales))
+```
+
+
+```{r}
+# Filtering the 2019 data from the combined data to give most up to date combined sales data
+clean_2019 <- vg_clean_combined %>% 
+  filter(year == "2019")
+```
+
+```{r}
+# Checking data for NAs in sales data
+clean_2019 %>% 
+  filter(is.na(global_sales))
+```
+
+```{r}
+# Dropping NA's from sales column in 2019 data, still a large data sample
+clean_2019 <- clean_2019 %>% 
+  drop_na(global_sales)
+```
+
+```{r}
+# Getting top ten cumulative sales by genre
+clean_2019 %>%
+  group_by(year, genre) %>% 
+  summarise(total_sales = sum(global_sales)) %>% 
+  arrange(desc(total_sales)) %>% 
+  head(10)
+  
+```
+```{r}
+clean_2019 %>%
+  group_by(genre) %>% 
+  summarise(sales = sum(global_sales)) %>% 
+  ggplot(aes(x = reorder(genre,(-sales)), y = sales)) + 
+		geom_bar(stat = 'identity', fill = "#B9A66D") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+   labs(
+    x = "\nGenre",
+    y = "Total Sales (Millions)\n") 
+```
+
+```{r}
+clean_2019 %>%
+  group_by(developer) %>% 
+  summarise(sales = sum(global_sales)) %>% 
+ arrange(desc(sales)) %>% 
+  head(10) %>% 
+  ggplot(aes(x = reorder(developer,(-sales)), y = sales)) + 
+		geom_bar(stat = 'identity', fill = "#B9A66D") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+   labs(
+    x = "\nDeveloper",
+    y = "Total Sales (Millions)\n") 
+```
+
+```{r}
+ps4 %>%
+  group_by(genre) %>% 
+  summarise(sales = sum(global)) %>% 
+  ggplot(aes(x = reorder(genre,(-sales)), y = sales)) + 
+	  geom_bar(stat = 'identity', fill = "#B9A66D") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+   labs(
+    x = "\nGenre",
+    y = "PS4 Sales (Millions)\n") 
+```
+
+```{r}
+xbox %>%
+  group_by(genre) %>% 
+  summarise(sales = sum(global)) %>% 
+  ggplot(aes(x = reorder(genre,(-sales)), y = sales)) + 
+	  geom_bar(stat = 'identity', fill = "#B9A66D") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+   labs(
+    x = "\nGenre",
+    y = "Xbox Sales (Millions)\n") 
+```
+
+```{r}
+# Running Multiple Linear Regression to see which factors are most important in sales
+
+trimmed_2019 <- clean_2019 %>%
+  select(-c("name", "platform", "year", "game_id", "user_score", "rating"))
+```
+ 
+```{r}
+# Calculating % of sales by genre
+trimmed_2019 %>% 
+  group_by(genre) %>% 
+  summarize(Sales = sum(global_sales), Percentage = Sales/sum(trimmed_2019$global_sales) * 100) %>%
+  arrange(desc(Percentage)) %>% 
+  head(5)
+```
+
+```{r}
+# Calculating % of sales by Platform
+trimmed_2019 %>% 
+  group_by(platform) %>% 
+  summarize(Sales = sum(global_sales), Percentage = Sales/sum(trimmed_2019$global_sales) * 100) %>%
+  arrange(desc(Percentage)) 
+```
+
+
+```{r}
+# Running Multiple Linear Regression to see which factors are most important in sales
+
+trimmed_2019 <- clean_2019 %>%
+  select(-c("name", "year", "game_id", "user_score", "rating"))
+```
+ 
+```{r}
+# CHECKING FOR MISSING VALUES
+trimmed_2019 %>% 
+  filter(is.na(global_sales))
+```
+
+```{r}
+trimmed_2019 %>% 
+  filter(is.na(critic_score))
+```
+
+```{r}
+# Replace na observations in the critic_score column with the median.
+trimmed_2019 <- trimmed_2019 %>%
+    mutate(critic_score = coalesce(critic_score, median(critic_score, na.rm = TRUE))) 
+```
+
+```{r}
+trimmed_2019 %>% 
+  distinct(genre)
+```
+
+```{r}
+trimmed_genre_2019 <- trimmed_2019 %>% 
+  filter(genre != "MMO", 
+         genre != "Visual Novel",
+         genre != "Sandbox", 
+         genre !="Education",
+         genre != "Board Game") %>%
+  select(c("genre", "global_sales", "critic_score", "developer", "publisher", "year_of_release"))
+```
+
+```{r}
+trimmed_genre_2019 %>%
+  ggplot(aes(x = critic_score, y = global_sales)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+   labs(
+    x = "\nCritic Score",
+    y = "Global Sales (Millions)\n") 
+```
+
+```{r}
+trimmed_genre_2019 %>%
+  ggplot(aes(x = genre, y = global_sales)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+   labs(
+    x = "\nGenre",
+    y = "Global Sales (Millions)\n")
+```
+
+```{r}
+library(ggfortify)
+model1 <- lm(global_sales ~ genre, data = trimmed_genre_2019)
+autoplot(model1)
+```
+
+```{r}
+summary(model1)
+```
+
