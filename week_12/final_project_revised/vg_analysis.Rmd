@@ -2,7 +2,6 @@
 title: "R Notebook"
 output: html_notebook
 ---
-
 ```{r}
 library(here)
 library(tidyverse)
@@ -138,7 +137,7 @@ trimmed_2019 %>%
 
 
 ```{r}
-# Running Linear Regression to see which factors are most important in sales
+# Running Multiple Linear Regression to see which factors are most important in sales
 
 trimmed_2019 <- clean_2019 %>%
   select(-c("name", "year", "game_id", "user_score", "rating"))
@@ -167,14 +166,13 @@ trimmed_2019 %>%
 ```
 
 ```{r}
-# Removing 5 lowest selling game genres to make data more workable in ggplot
 trimmed_genre_2019 <- trimmed_2019 %>% 
   filter(genre != "MMO", 
          genre != "Visual Novel",
          genre != "Sandbox", 
          genre !="Education",
          genre != "Board Game") %>%
-  select(c("genre", "global_sales", "critic_score"))
+  select(c("genre", "global_sales", "critic_score", "developer", "publisher", "year_of_release"))
 ```
 
 ```{r}
@@ -199,106 +197,13 @@ trimmed_genre_2019 %>%
     y = "Global Sales (Millions)\n")
 ```
 
-#############################
-UPDATED STATISTICAL ANALYSIS
-############################
-
-
-```{r}
-library(GGally)
-ggpairs(trimmed_genre_2019)
-```
-```{r}
-# Building a scatterplot to see if there is any correlation between sales & critic score
-critic_plot <- ggplot(trimmed_genre_2019) +
-  geom_jitter(aes(x = critic_score, y = global_sales), shape = 1, 
-              position = position_jitter(h = 0.03))
-
-critic_plot
-```
-
-
 ```{r}
 library(ggfortify)
-model1 <- lm(global_sales ~ critic_score, data = trimmed_genre_2019)
+model1 <- lm(global_sales ~ genre, data = trimmed_genre_2019)
 autoplot(model1)
-#  A linear model seems a very poor fit for the relationship between sales & critic score
 ```
 
 ```{r}
 summary(model1)
-```
-
-```{r}
-genre_plot <- ggplot(trimmed_genre_2019) +
-  geom_jitter(aes(x = genre, y = global_sales), shape = 1, 
-              position = position_jitter(h = 0.03)) +
-   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-
-genre_plot
-# There does appear to be more correlation between genre and sales, but not hugely informative.
-```
-```{r}
-model2 <- lm(global_sales ~ genre, data = trimmed_genre_2019)
-autoplot(model2)
-```
-```{r}
-summary(model2)
-```
-
-```{r}
-# Sorting the Average Critic Score by Genre
-clean_2019 %>%
-  group_by(genre) %>%
-  summarise(avg_critic_score = mean(critic_score, na.rm = TRUE)) %>% 
-  arrange(desc(avg_critic_score))
-```
-```{r}
-# Sorting the Average Sales Score by Genre
-clean_2019 %>%
-  group_by(genre) %>%
-  summarise(avg_sales = mean(global_sales, na.rm = TRUE)) %>% 
-  arrange(desc(avg_sales))
-```
-```{r}
-clean_2019 %>%
-  group_by(year_of_release) %>%
-  summarise(avg_sales = mean(global_sales, na.rm = TRUE)) %>% 
-  arrange(desc(avg_sales))
-```
-
-```{r}
-top_publisher_year <- clean_2019 %>% 
-         group_by(year_of_release, publisher) %>% 
-         summarize(Total = sum(global_sales)) %>% 
-  arrange(desc(Total)) %>% 
-  head(10)
-         top_publisher_year
-```
-```{r}
-genre_by_year <- clean_2019 %>% 
-         group_by(year_of_release, genre) %>% 
-         summarize(total = sum(global_sales, na.rm = TRUE)) %>%
-         top_n(1)
-ggplot(genre_by_year, aes(year_of_release, total, fill = genre)) + 
-  geom_bar(stat = 'identity') +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
-   labs(
-    x = "\nGenre",
-    y = "Sales (Millions)\n") 
-```
-
-```{r}
-yearly_sales <- clean_2019 %>% 
-  filter(year_of_release < "2019") %>% 
-  group_by(year_of_release) %>%
-  summarise(total = sum(global_sales))
-
-ggplot(yearly_sales, aes(year_of_release, total)) +
-  geom_bar(stat = 'identity', fill = "#B9A66D") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
-   labs(
-    x = "\nYear",
-    y = "Total Sales (Millions)\n") 
 ```
 
